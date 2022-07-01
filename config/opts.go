@@ -2,8 +2,9 @@ package config
 
 import (
 	"encoding/json"
-	log "github.com/sirupsen/logrus"
 	"time"
+
+	log "github.com/sirupsen/logrus"
 )
 
 type (
@@ -17,12 +18,14 @@ type (
 
 		// azure
 		Azure struct {
-			Tenant            *string  `long:"azure-tenant"                   env:"AZURE_TENANT_ID"           description:"Azure tenant id" required:"true"`
-			Environment       *string  `long:"azure-environment"              env:"AZURE_ENVIRONMENT"         description:"Azure environment name" default:"AZUREPUBLICCLOUD"`
-			Subscription      []string `long:"azure-subscription"             env:"AZURE_SUBSCRIPTION_ID"     env-delim:" "  description:"Azure subscription ID"`
-			Location          []string `long:"azure-location"                 env:"AZURE_LOCATION"            env-delim:" "  description:"Azure locations"                                  default:"westeurope" default:"northeurope"` //nolint:staticcheck
-			ResourceGroupTags []string `long:"azure-resourcegroup-tag"        env:"AZURE_RESOURCEGROUP_TAG"   env-delim:" "  description:"Azure ResourceGroup tags"                         default:"owner"`
-			ResourceTags      []string `long:"azure-resource-tag"             env:"AZURE_RESOURCE_TAG"        env-delim:" "  description:"Azure Resource tags"                              default:"owner"`
+			Tenant                  *string  `long:"azure-tenant"                     env:"AZURE_TENANT_ID"                                 description:"Azure tenant id"                  required:"true"`
+			Environment             *string  `long:"azure-environment"                env:"AZURE_ENVIRONMENT"                               description:"Azure environment name"           default:"AZUREPUBLICCLOUD"`
+			GraphEndpoint           *string  `long:"azure-graph-endpoint"             env:"AZURE_GRAPH_ENDPOINT"                            description:"Azure graph endpoint"             default:""`
+			ResourceManagerEndpoint *string  `long:"azure-resource-manager-endpoint"  env:"AZURE_RESOURCE_MANAGER_ENDPOINT"                 description:"Azure resource manager endpoint"  default:""`
+			Subscription            []string `long:"azure-subscription"               env:"AZURE_SUBSCRIPTION_ID"            env-delim:" "  description:"Azure subscription ID"`
+			Location                []string `long:"azure-location"                   env:"AZURE_LOCATION"                   env-delim:" "  description:"Azure locations"                  default:"westeurope" default:"northeurope"` //nolint:staticcheck
+			ResourceGroupTags       []string `long:"azure-resourcegroup-tag"          env:"AZURE_RESOURCEGROUP_TAG"          env-delim:" "  description:"Azure ResourceGroup tags"         default:"owner"`
+			ResourceTags            []string `long:"azure-resource-tag"               env:"AZURE_RESOURCE_TAG"               env-delim:" "  description:"Azure Resource tags"              default:"owner"`
 		}
 
 		// scrape times

@@ -18,7 +18,7 @@ func (m *MetricsCollectorAzureRmRateLimitRead) Reset() {
 }
 
 func (m *MetricsCollectorAzureRmRateLimitRead) Collect(ctx context.Context, logger *log.Entry, callback chan<- func(), subscription subscriptions.Subscription) {
-	client := subscriptions.NewClientWithBaseURI(azureEnvironment.ResourceManagerEndpoint)
+	client := subscriptions.NewClientWithBaseURI(azureResourceManagerEndpoint)
 	client.Authorizer = AzureAuthorizer
 	client.ResponseInspector = azureResponseInspector(&subscription)
 

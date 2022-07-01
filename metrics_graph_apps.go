@@ -25,8 +25,8 @@ func (m *MetricsCollectorGraphApps) Setup(collector *CollectorCustom) {
 	m.CollectorReference = collector
 
 	// init azure client
-	auth, _ := auth.NewAuthorizerFromEnvironmentWithResource(azureEnvironment.GraphEndpoint)
-	client := graphrbac.NewApplicationsClientWithBaseURI(azureEnvironment.GraphEndpoint, *opts.Azure.Tenant)
+	auth, _ := auth.NewAuthorizerFromEnvironmentWithResource(azureGraphEndpoint)
+	client := graphrbac.NewApplicationsClientWithBaseURI(azureGraphEndpoint, *opts.Azure.Tenant)
 	client.Authorizer = auth
 	client.ResponseInspector = azureResponseInspector(nil)
 

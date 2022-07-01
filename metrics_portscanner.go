@@ -160,7 +160,7 @@ func (m *MetricsCollectorPortscanner) fetchPublicIpAdresses(ctx context.Context,
 		subscription := val
 		contextLogger := logger.WithField("azureSubscription", subscription)
 
-		client := network.NewPublicIPAddressesClientWithBaseURI(azureEnvironment.ResourceManagerEndpoint, *subscription.SubscriptionID)
+		client := network.NewPublicIPAddressesClientWithBaseURI(azureResourceManagerEndpoint, *subscription.SubscriptionID)
 		client.Authorizer = AzureAuthorizer
 		client.ResponseInspector = azureResponseInspector(&subscription)
 

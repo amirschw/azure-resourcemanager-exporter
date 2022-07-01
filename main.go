@@ -3,6 +3,15 @@ package main
 import (
 	"context"
 	"fmt"
+	"net/http"
+	"os"
+	"path"
+	"path/filepath"
+	"regexp"
+	"runtime"
+	"strconv"
+	"strings"
+
 	"github.com/Azure/azure-sdk-for-go/profiles/latest/resources/mgmt/subscriptions"
 	"github.com/Azure/go-autorest/autorest"
 	"github.com/Azure/go-autorest/autorest/azure"
@@ -12,19 +21,12 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	log "github.com/sirupsen/logrus"
 	"github.com/webdevops/azure-resourcemanager-exporter/config"
-	"net/http"
-	"os"
-	"path"
-	"path/filepath"
-	"regexp"
-	"runtime"
-	"strconv"
-	"strings"
 )
 
 const (
 	Author                    = "webdevops.io"
 	AZURE_RESOURCE_TAG_PREFIX = "tag_"
+	PrivateCloud              = "PRIVATE"
 )
 
 var (
@@ -34,10 +36,11 @@ var (
 	AzureAuthorizer    autorest.Authorizer
 	AzureSubscriptions []subscriptions.Subscription
 
-	azureResourceGroupTags AzureTagFilter
-	azureResourceTags      AzureTagFilter
-	azureEnvironment       azure.Environment
-	portscanPortRange      []Portrange
+	azureResourceGroupTags       AzureTagFilter
+	azureResourceTags            AzureTagFilter
+	azureResourceManagerEndpoint string
+	azureGraphEndpoint           string
+	portscanPortRange            []Portrange
 
 	collectorGeneralList map[string]*CollectorGeneral
 	collectorCustomList  map[string]*CollectorCustom
@@ -212,12 +215,31 @@ func initAzureConnection() {
 	var err error
 	ctx := context.Background()
 
+	if strings.EqualFold(*opts.Azure.Environment, PrivateCloud) {
+		azureGraphEndpoint = *opts.Azure.GraphEndpoint
+		if azureGraphEndpoint == "" {
+			log.Panicf("Azure Graph Endpoint must be provided for %s cloud environment", PrivateCloud)
+		}
+
+		azureResourceManagerEndpoint = *opts.Azure.ResourceManagerEndpoint
+		if azureResourceManagerEndpoint == "" {
+			log.Panicf("Azure Resource Manager Endpoint must be provided for %s cloud environment", PrivateCloud)
+		}
+	} else {
+		azureEnvironment, err := azure.EnvironmentFromName(*opts.Azure.Environment)
+		if err != nil {
+			log.Panic(err)
+		}
+		azureGraphEndpoint = azureEnvironment.GraphEndpoint
+		azureResourceManagerEndpoint = azureEnvironment.ResourceManagerEndpoint
+	}
+
 	// setup azure authorizer
-	AzureAuthorizer, err = auth.NewAuthorizerFromEnvironment()
+	AzureAuthorizer, err = auth.NewAuthorizerFromEnvironmentWithResource(azureResourceManagerEndpoint)
 	if err != nil {
 		log.Panic(err)
 	}
-	subscriptionsClient := subscriptions.NewClient()
+	subscriptionsClient := subscriptions.NewClientWithBaseURI(azureResourceManagerEndpoint)
 	subscriptionsClient.Authorizer = AzureAuthorizer
 
 	if len(opts.Azure.Subscription) == 0 {
@@ -241,11 +263,6 @@ func initAzureConnection() {
 			}
 			AzureSubscriptions = append(AzureSubscriptions, result)
 		}
-	}
-
-	azureEnvironment, err = azure.EnvironmentFromName(*opts.Azure.Environment)
-	if err != nil {
-		log.Panic(err)
 	}
 }
 
